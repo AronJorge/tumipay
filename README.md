@@ -297,6 +297,36 @@ graph TD
     GatewayAdapter -->|HTTP Client| ExternalProvider
 ```
 
+## Estrategia de calidad y testing
+
+Para garantizar la mantenibilidad y prevenir la deuda técnica, el proyecto integra un pipeline estricto de aseguramiento de calidad:
+
+### Análisis estático
+
+Detectamos errores y violaciones de estilo antes de compilar.
+
+* **SonarCloud / SonarQube:** Mide la Deuda Técnica y Code Smells. El "Quality Gate" impide el despliegue si la cobertura baja del 80% o existen vulnerabilidades críticas (OWASP).
+* **SonarLint:** Integrado en el IDE para feedback inmediato.
+* **Checkstyle/Spotless:** Garantiza un formato de código homogéneo (Google Java Style) en todo el equipo.
+
+### Cobertura de código
+
+* **JaCoCo:** Herramienta de cobertura que verifica qué líneas de negocio han sido ejecutadas por los tests.
+* **Meta:** `>80%` en la capa de **Dominio** y **Aplicación**. Se excluyen DTOs y configuraciones de infraestructura.
+
+### Verificación de arquitectura
+
+Utilizamos **ArchUnit** para testear que la arquitectura se respete automáticamente. Si un desarrollador intenta inyectar un repositorio en una entidad, el build falla.
+
+* **Regla 1:** El `Domain` no puede depender de `Infrastructure` ni `Application`.
+* **Regla 2:** Los Controladores deben residir en `adapter.input` y terminar en `Controller`.
+
+### Pirámide de testing
+
+* **Unit Tests (JUnit 5 + Mockito):** Pruebas aisladas para lógica de dominio y casos de uso.
+* **Mutation Testing (Pitest):** Verifica la calidad de los tests introduciendo fallos intencionales ("mutantes").
+* **Integration Tests (Testcontainers):** Pruebas de adaptadores reales levantando contenedores efímeros de PostgreSQL en Docker, garantizando paridad con producción.
+
 _____
 
 
