@@ -327,6 +327,28 @@ Utilizamos **ArchUnit** para testear que la arquitectura se respete automáticam
 * **Mutation Testing (Pitest):** Verifica la calidad de los tests introduciendo fallos intencionales ("mutantes").
 * **Integration Tests (Testcontainers):** Pruebas de adaptadores reales levantando contenedores efímeros de PostgreSQL en Docker, garantizando paridad con producción.
 
+## Modelo de integración continua (CI)
+
+### Herramienta seleccionada: GitHub Actions
+
+Se ha seleccionado **GitHub Actions** por su integración nativa con el repositorio y eficiencia operativa.
+
+### Flujo de trabajo
+
+El pipeline definido en `ci-pipeline.yml` implementa el siguiente modelo:
+
+1.  **Activación (triggers):**
+    *   `push` o `pull_request` a ramas principales (`main`, `develop`).
+    
+2.  **Pipeline automatizado (Ubuntu Latest):**
+    *   **Checkout:** Obtención del código.
+    *   **Setup:** Configuración de JDK 17 (Temurin).
+    *   **Cache:** Cacheado de dependencias Maven (`~/.m2`).
+    *   **Build & Test:** Ejecución de `mvn clean install` que compila, ejecuta Tests Unitarios y Tests de Integración.
+
+3.  **Política de Calidad:**
+    El pipeline actúa como un "Quality Gate" bloqueante. Si los tests fallan, el código no puede ser integrado.
+
 _____
 
 
