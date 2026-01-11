@@ -19,7 +19,6 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache:maven: true
         
     - name: Build with Maven
       run: ./mvnw clean install
