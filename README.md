@@ -438,15 +438,39 @@ src/main/java/com/tumipay
 ```
 
 
-### Configuración de Base de Datos
+### Configuración de base de datos
 
-Al iniciar la aplicación por primera vez, es necesario poblar la base de datos (H2 en memoria) con datos maestros (clientes, métodos de pago, etc.) para que las pruebas manuales o Postman funcionen correctamente.
+### Carga de datos (Seed Data)
 
-Ejecute el siguiente script SQL en su cliente de base de datos preferido (o la consola H2):
+El sistema utiliza una base de datos en memoria (H2) que inicia vacía en cada ejecución. Existen dos formas de poblar los datos maestros (Clientes, Cuentas, etc.):
 
-`insert_data.sql`
+#### Carga automática (Recomendada)
 
-Este script se encuentra en la raíz del proyecto.
+El sistema está configurado para ejecutar automáticamente el script `src/main/resources/data.sql` al iniciar la aplicación.
+
+* **Verificación:** Si al arrancar ves logs de inserciones o puedes consultar endpoints, la carga fue exitosa.
+
+#### Carga manual (Si falla la carga automática)
+
+Si la carga automática falla o deseas reiniciar los datos sin detener el servidor, sigue estos pasos:
+
+1. **Acceder a la Consola H2:**
+* Abra en su navegador: [http://localhost:8080/h2-console](https://www.google.com/search?q=http://localhost:8080/h2-console)
+
+
+2. **Credenciales de Conexión:**
+Verifique que coincidan con su `application.properties`:
+* **Driver Class:** `org.h2.Driver`
+* **JDBC URL:** `jdbc:h2:mem:tumipay`
+* **User Name:** `admin`
+* **Password:** vacío
+
+
+3. **Ejecutar Script:**
+* Copie el contenido del archivo `src/main/resources/data.sql`.
+* Péguelo en el área de comando SQL de la consola.
+* Presione **Run** (`Ctrl + Enter`).
+
 
 ## Uso del API
 
