@@ -2,8 +2,11 @@ package com.tumipay.application.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import com.tumipay.domain.exception.PayInDomainException;
+import com.tumipay.domain.model.Money;
 import com.tumipay.domain.model.PayIn;
 import com.tumipay.domain.port.in.CreatePayInUseCase;
 import com.tumipay.domain.port.out.AccountRepositoryPort;
@@ -12,29 +15,33 @@ import com.tumipay.domain.port.out.PayInRepositoryPort;
 import com.tumipay.domain.port.out.PaymentGatewayPort;
 import com.tumipay.domain.port.out.PaymentMethodRepositoryPort;
 import com.tumipay.infrastructure.adapter.input.rest.constant.MessageConstants;
+import com.tumipay.domain.port.in.GetPayInUseCase;
+import com.tumipay.domain.model.PayInId;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Locale;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PayInOrchestrator implements CreatePayInUseCase, com.tumipay.domain.port.in.GetPayInUseCase {
+public class PayInOrchestrator implements CreatePayInUseCase, GetPayInUseCase {
 
     private final PayInRepositoryPort payInRepositoryPort;
     private final PaymentGatewayPort paymentGatewayPort;
     private final CustomerRepositoryPort customerRepositoryPort;
     private final AccountRepositoryPort accountRepositoryPort;
     private final PaymentMethodRepositoryPort paymentMethodRepositoryPort;
-    private final org.springframework.context.MessageSource messageSource;
+    private final MessageSource messageSource;
 
     @Override
-    public PayIn execute(com.tumipay.domain.model.PayInId id) {
+    public PayIn execute(PayInId id) {
         return payInRepositoryPort.findById(id)
                 .orElseThrow(() -> new PayInDomainException(messageSource.getMessage(
-                        com.tumipay.infrastructure.adapter.input.rest.constant.MessageConstants.Errors.PAYIN_NOT_FOUND,
+                        MessageConstants.Errors.PAYIN_NOT_FOUND,
                         new Object[] { id.value() },
-                        org.springframework.context.i18n.LocaleContextHolder.getLocale())));
+                        LocaleContextHolder.getLocale())));
     }
 
     @Override
@@ -46,6 +53,10 @@ public class PayInOrchestrator implements CreatePayInUseCase, com.tumipay.domain
                 command.accountId(),
                 command.paymentMethodId(),
                 command.amount());
+                
+        Money amount = payIn.getAmount();
+        System.out.println(amount);
+        payIn = saveState(payIn);
 
         payIn.validate();
         payIn = saveState(payIn);
@@ -63,7 +74,7 @@ public class PayInOrchestrator implements CreatePayInUseCase, com.tumipay.domain
             String errorMessage = messageSource.getMessage(
                     MessageConstants.Errors.GATEWAY_REJECTED,
                     null,
-                    org.springframework.context.i18n.LocaleContextHolder.getLocale());
+                    LocaleContextHolder.getLocale());
             payIn.fail(errorMessage);
         }
 
@@ -78,7 +89,7 @@ public class PayInOrchestrator implements CreatePayInUseCase, com.tumipay.domain
     }
 
     private void validateResourcesExistence(CreatePayInCommand command) {
-        java.util.Locale locale = org.springframework.context.i18n.LocaleContextHolder.getLocale();
+        Locale locale = LocaleContextHolder.getLocale();
 
         if (!customerRepositoryPort.existsById(command.customerId())) {
             String msg = messageSource.getMessage(MessageConstants.Errors.CUSTOMER_NOT_FOUND,
